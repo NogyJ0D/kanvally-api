@@ -10,41 +10,33 @@ const projectSchema = new mongoose.Schema({
   },
 
   idBoss: {
-    type: String,
-    required: [true, 'El proyecto debe tener el id del dueño']
+    type: mongoose.SchemaTypes.ObjectId,
+    required: [true, 'El proyecto debe tener el id del dueño'],
+    ref: 'users'
   },
 
   teams: [
     {
-      name: {
-        type: String,
-        required: [true, 'Ingrese el nombre del equipo.'],
-        maxlength: [32, 'El nombre del equipo no puede tener mas de 32 caracteres.']
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'teams'
+    }
+  ],
+
+  members: [
+    {
+      _id: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'users',
+        unique: true
       },
 
-      idLeader: String,
-
-      members: [
-        {
-          _id: {
-            type: String,
-            required: [true, 'Ingrese los id de los miembros.']
-          },
-
-          username: {
-            type: String,
-            required: [true, 'Ingrese el nombre de usuario de los miembros.']
-          },
-
-          role: {
-            type: Number,
-            required: [true, 'Ingrese los roles de los miembros.'],
-            default: 1
-          }
-        }
-      ]
+      username: {
+        type: String,
+        required: [true, 'Ingrese el nombre de usuario invitado.']
+      }
     }
   ]
+
 })
 projectSchema.plugin(uniqueValidator)
 

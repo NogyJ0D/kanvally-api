@@ -57,7 +57,7 @@ class Auth {
       user.email,
       'Registro exitoso',
       '¡Gracias por entrar a Kanvally!',
-      `<h1><em>${user.gender === 'Hombre' ? 'Bienvenido' : 'Bienvenida'}</em> a la aplicación</h1>
+      `<h1>¡Gracias por entrar a Kanvally!</h1>
       <br>
       <a href='http://localhost:4000/auth/email/${emailToken}'>Valida tu email</a>`
     )

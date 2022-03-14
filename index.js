@@ -22,6 +22,8 @@ const authRoutes = require('./routes/auth')
 authRoutes(app)
 const projectsRoutes = require('./routes/projects')
 projectsRoutes(app)
+const teamsRoutes = require('./routes/teams')
+teamsRoutes(app)
 
 // Starting
 const { port, env } = require('./config')

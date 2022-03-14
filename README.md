@@ -8,8 +8,11 @@ Rol global de usuario:
 Rol de usuario por equipo:
   1 - Miembro     > Realiza las tareas
   2 - Tester      > Prueba las tareas
-  3 - Examinador  > Marca las tareas probadas como completadas
-  4 - Líder       > Crea y edita las tareas
+  3 - Líder       > Crea y edita las tareas
+
+Rol de usuario por proyecto:
+  1 - Miembro
+  2 - Jefe
 
 Rol máximo de proyecto: Jefe / Boss > Puede ver todos los equipos, tareas, usuarios y editarlos
 
@@ -29,12 +32,12 @@ Listo:
     login, validate, signup, logout, passport (google, spotify)
   
   >Proyectos
-    CRUD
+    CRUD, invite
 
 Por hacer:
 
   Equipos
-    CRUD
+    CRUD, invite
 
   Listas / Tareas
     CRUD
