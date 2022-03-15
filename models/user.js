@@ -48,18 +48,8 @@ const userSchema = new mongoose.Schema({
 
   projects: [
     {
-      _id: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'projects'
-      },
-
-      role: {
-        type: Number,
-        enum: [1, 2],
-        default: 1
-      },
-
-      name: String
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'projects'
     }
   ],
 

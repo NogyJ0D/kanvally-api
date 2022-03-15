@@ -31,13 +31,16 @@ Listo:
   >Auth / Usuarios:
     login, validate, signup, logout, passport (google, spotify)
   
-  >Proyectos
+  >Proyectos:
+    CRUD, invite
+
+  >Equipos:
     CRUD, invite
 
 Por hacer:
 
   Equipos
-    CRUD, invite
+    expulsar miembro
 
   Listas / Tareas
     CRUD

@@ -76,10 +76,9 @@ class Auth {
   }
 
   async loginProvider (profile) {
-    let user = await this.users.getByFilter({ idProvider: profile.id })
+    let user = await this.users.getByFilter({ idProvider: profile.idProvider })
 
     if (!user) user = await this.users.create(profile)
-    console.log(user)
     return this.getToken(user)
   }
 }

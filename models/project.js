@@ -15,10 +15,16 @@ const projectSchema = new mongoose.Schema({
     ref: 'users'
   },
 
+  logo: {
+    type: String,
+    default: 'https://www.adaptivewfs.com/wp-content/uploads/2020/07/logo-placeholder-image.png'
+  },
+
   teams: [
     {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: 'teams'
+      ref: 'teams',
+      unique: true
     }
   ],
 
@@ -26,13 +32,13 @@ const projectSchema = new mongoose.Schema({
     {
       _id: {
         type: mongoose.SchemaTypes.ObjectId,
-        ref: 'users',
-        unique: true
+        ref: 'users'
       },
 
-      username: {
-        type: String,
-        required: [true, 'Ingrese el nombre de usuario invitado.']
+      role: {
+        type: Number,
+        enum: [1, 2],
+        default: 1
       }
     }
   ]
@@ -41,5 +47,4 @@ const projectSchema = new mongoose.Schema({
 projectSchema.plugin(uniqueValidator)
 
 const projectModel = mongoose.model('projects', projectSchema)
-
 module.exports = projectModel

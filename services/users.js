@@ -1,8 +1,20 @@
 const UserModel = require('../models/user')
 
 class Users {
+  async getAll () {
+    return await UserModel.find()
+  }
+
   async getByFilter (filter) {
-    return await UserModel.findOne(filter)
+    try { return await UserModel.findOne(filter) } catch (error) { return { fail: true, error } }
+  }
+
+  async getById (id) {
+    try { return await UserModel.findById(id) } catch (error) { return { fail: true, error } }
+  }
+
+  async getProjects (id) {
+    return await UserModel.findById(id).select('projects').populate('projects', 'name')
   }
 
   async create (data) {

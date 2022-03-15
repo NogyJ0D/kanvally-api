@@ -2,42 +2,39 @@ const ProjectModel = require('../models/project')
 const UserModel = require('../models/user')
 
 class Projects {
+  // Ver proyectos
   async getAll () {
     return await ProjectModel.find()
   }
 
-  async getAllById (id) {
+  async getProject (id) {
     try {
-      return await ProjectModel.findById(id).populate('members._id')
+      const project = await ProjectModel.findById(id)
+      return project
     } catch (error) {
       return error
     }
   }
 
-  async getByFilter (filter) {
-    return await ProjectModel.findOne(filter)
+  async getProjectTeams (id) {
+    try { return await ProjectModel.findById(id).select('name teams').populate('teams') } catch (error) { return { fail: true, error } }
   }
 
-  async getTeamsByProjectId (id) {
-    return await ProjectModel.find()
+  async getProjectMembers (id) {
+    try { return await ProjectModel.findById(id).select('name members').populate('members', 'username email') } catch (error) { return { fail: true, error } }
   }
 
-  async getMembersByProject (id, filter) {
-    if (filter === 'populated') return await ProjectModel.findById(id).select('members').populate('members._id')
-    else return await ProjectModel.findById(id).select('members')
+  async getProjectComplete (id) {
+    try { return await ProjectModel.findById(id).populate('members').populate('teams') } catch (error) { return { fail: true, error } }
   }
 
+  // Modificar proyectos
   async create (data) {
     try {
-      data.teams = []
-      data.members = [{ _id: data.idBoss, username: data.username }]
-
-      const project = new ProjectModel(data)
-      const user = await UserModel.findById(data.idBoss)
-
-      user.projects.push({ _id: project._id, role: 2, name: data.name })
-      await user.save({ validateModifiedOnly: true })
+      const project = await new ProjectModel({ name: data.name, idBoss: data.idBoss, logo: data.logo || null, members: [{ _id: data.idBoss, role: 2 }] })
+      await UserModel.updateOne({ _id: data.idBoss }, { $push: { projects: project._id } })
       return await project.save()
+      // return await project.save()
     } catch (error) {
       const errorMessages = Object.keys(error.errors).map(e => {
         const err = error.errors[e]
@@ -50,24 +47,16 @@ class Projects {
 
   // Reemplazarlo por específicos
   async update (id, data) {
-    try {
-      return await ProjectModel.findByIdAndUpdate(id, data, { runValidators: true, new: true })
-    } catch (error) {
-      return { fail: true, error }
-    }
+    try { return await ProjectModel.findByIdAndUpdate(id, data, { runValidators: true, new: true }) } catch (error) { return { fail: true, error } }
   }
 
-  async invite (id, userData) {
+  async invite (id, data) {
     try {
-      const project = await ProjectModel.findById(id)
-      const user = await UserModel.findById(userData._id)
-      project.members.push(userData)
-      user.projects.push({ _id: id, role: 1, name: project.name })
-
-      await user.save({ validateModifiedOnly: true })
-      await project.save({ validateModifiedOnly: true })
+      await UserModel.updateOne({ _id: data.userid }, { $push: { projects: id } }, { runValidators: true })
+      await ProjectModel.updateOne({ _id: id }, { $push: { members: { _id: data.userid, role: data.role || 1 } } }, { runValidators: true })
       return { success: true, message: 'El usuario fue añadido con éxito.' }
     } catch (error) {
+      console.log(error)
       const errorMessages = Object.keys(error.errors).map(e => {
         const err = error.errors[e]
         if (err.kind === 'unique') return 'Ese usuario ya fue invitado.'
@@ -80,7 +69,9 @@ class Projects {
   // Eliminar el project del usuario
   async delete (id) {
     try {
-      return await ProjectModel.findByIdAndDelete(id)
+      await UserModel.updateMany({ projects: id }, { $pull: { projects: id } })
+      await ProjectModel.findByIdAndDelete(id)
+      return { success: true, message: 'El proyecto fue eliminado exitosamente.' }
     } catch (error) {
       return { fail: true, error }
     }
