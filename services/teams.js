@@ -1,8 +1,16 @@
 const ProjectModel = require('../models/project')
 const TeamModel = require('../models/team')
-const { mongoose } = require('../config/database')
 
 class Teams {
+  validate (error) {
+    const errorMessages = Object.keys(error.errors).map(e => {
+      const err = error.errors[e]
+      // if (err.kind === 'unique') return 'Ya existe un equipo en tu proyecto con ese nombre, intente otro.'
+      return err.message
+    })
+    return { fail: true, errorMessages }
+  }
+
   async getAll () {
     const teams = await TeamModel.find()
     if (!teams[0]) return { fail: true, error: 'No existen equipos.' }
@@ -12,9 +20,8 @@ class Teams {
   async getById (id) {
     try {
       const team = await TeamModel.findById(id).populate('members')
-      if (team) return team
-      else return { fail: true, error: 'Ese equipo no existe.' }
-    } catch (error) { return { fail: true, error } }
+      return team
+    } catch (error) { return { fail: true, error: 'El equipo no existe.' } }
   }
 
   async GetByProject (id) {
@@ -69,23 +76,41 @@ class Teams {
     }
   }
 
-  async removeUser (id, { userid }) {
-    // TODO: hacer esto
+  async changeRole (id, { userId, userRole }) {
+    if (userRole === 'Líder') return { fail: true, message: 'No puedes cambiar al líder del proyecto.' }
+    return await TeamModel.findOneAndUpdate(
+      { $and: [{ _id: id }, { 'members._id': userId }] },
+      { $set: { 'members.$._id': userId, 'members.$.role': userRole } },
+      { new: true, runValidators: true }
+    ).then(res => {
+      if (!res) return { fail: true, error: 'No se encuentra un usuario bajo esos parametros' }
+      else return { success: true, message: 'El rol del usuario fue cambiado exitosamente.' }
+    }).catch(err => { return this.validate(err) })
   }
 
-  async update (id, data) {
-    try {
-      return await TeamModel.findByIdAndUpdate(id, data, { new: true, runValidators: true })
-    } catch (error) {
-      const errorMessages = Object.keys(error.errors).map(e => {
-        const err = error.errors[e]
-        console.log(err)
-        // if (err.kind === 'unique') return 'Ya existe un equipo en tu proyecto con ese nombre, intente otro.'
-        return err.message
-      })
-      return { fail: true, errorMessages }
-    }
+  async expelUser (id, userId) {
+    return await TeamModel.findOneAndUpdate(
+      { $and: [{ _id: id }, { 'members._id': userId }] },
+      { $pull: { members: { _id: userId } } }
+    ).then(res => {
+      if (!res) return { fail: true, error: 'No se encuentra un equipo bajo esos parámetros.' }
+      else return { success: true, message: 'El usuario fue eliminado exitosamente del equipo.' }
+    }).catch(err => { return { fail: true, error: err } })
   }
+
+  // async update (id, data) {
+  //   try {
+  //     return await TeamModel.findByIdAndUpdate(id, data, { new: true, runValidators: true })
+  //   } catch (error) {
+  //     const errorMessages = Object.keys(error.errors).map(e => {
+  //       const err = error.errors[e]
+  //       console.log(err)
+  //       // if (err.kind === 'unique') return 'Ya existe un equipo en tu proyecto con ese nombre, intente otro.'
+  //       return err.message
+  //     })
+  //     return { fail: true, errorMessages }
+  //   }
+  // }
 
   async delete (id) {
     try {

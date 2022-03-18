@@ -14,16 +14,6 @@ const projects = app => {
     return res.status(200).json(projects)
   })
 
-  // router.get('/:id/all', async (req, res) => {
-  //   const project = await projectService.getAllById(req.params.id)
-  //   return res.json(project)
-  // })
-
-  // router.get('/:id/members/', async (req, res) => {
-  //   const members = await projectService.getMembersByProject(req.params.id)
-  //   return res.status(200).json(members)
-  // })
-
   router.get('/:id/:filter', [isRegular, isMyProject], async (req, res) => {
     const { id, filter } = req.params
     let response
@@ -56,6 +46,14 @@ const projects = app => {
 
   router.put('/invite/:id', [isRegular, isMyProject], async (req, res) => {
     const project = await projectService.invite(req.params.id, req.body)
+
+    project.fail
+      ? res.status(400).json(project)
+      : res.status(200).json(project)
+  })
+
+  router.put('/expel/:id/:userId', [isRegular, isMyProject], async (req, res) => {
+    const project = await projectService.expel(req.params.id, req.params.userId)
 
     project.fail
       ? res.status(400).json(project)

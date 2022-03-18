@@ -45,6 +45,14 @@ const teams = app => {
       : res.status(200).json(team)
   })
 
+  router.put('/role/:id/', [isRegular, isMyTeam], async (req, res) => {
+    const team = await teamService.changeRole(req.params.id, req.body)
+
+    team.fail
+      ? res.status(400).json(team)
+      : res.status(200).json(team)
+  })
+
   router.put('/invite/:id/', [isRegular, isMyTeam], async (req, res) => {
     const team = await teamService.addUser(req.params.id, req.body)
 

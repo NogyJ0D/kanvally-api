@@ -1,5 +1,7 @@
 const ProjectModel = require('../models/project')
 const UserModel = require('../models/user')
+const TeamModel = require('../models/team')
+const TaskModel = require('../models/task')
 
 class Projects {
   // Ver proyectos
@@ -8,12 +10,7 @@ class Projects {
   }
 
   async getProject (id) {
-    try {
-      const project = await ProjectModel.findById(id)
-      return project
-    } catch (error) {
-      return error
-    }
+    try { return await ProjectModel.findById(id) } catch (error) { return error }
   }
 
   async getProjectTeams (id) {
@@ -21,11 +18,11 @@ class Projects {
   }
 
   async getProjectMembers (id) {
-    try { return await ProjectModel.findById(id).select('name members').populate('members', 'username email') } catch (error) { return { fail: true, error } }
+    try { return await ProjectModel.findById(id).select('name members').populate('members._id', 'username email') } catch (error) { return { fail: true, error } }
   }
 
   async getProjectComplete (id) {
-    try { return await ProjectModel.findById(id).populate('members').populate('teams') } catch (error) { return { fail: true, error } }
+    try { return await ProjectModel.findById(id).populate('members._id', 'username email').populate('teams') } catch (error) { return { fail: true, error } }
   }
 
   // Modificar proyectos
@@ -66,11 +63,27 @@ class Projects {
     }
   }
 
+  async expel (id, userId) {
+    try {
+      await UserModel.updateOne({ _id: userId }, { $pull: { projects: id } })
+      await TeamModel.updateMany({ 'members._id': userId }, { $pull: { members: { _id: userId } } })
+      await ProjectModel.updateOne({ _id: id }, { $pull: { members: { _id: userId } } })
+      return { success: true, message: 'El usuario fue expulsado del proyecto exitosamente.' }
+    } catch (error) { return { fail: true, error } }
+  }
+
   // Eliminar el project del usuario
   async delete (id) {
     try {
-      await UserModel.updateMany({ projects: id }, { $pull: { projects: id } })
       await ProjectModel.findByIdAndDelete(id)
+      await TeamModel.deleteMany({ idProject: id })
+      await TaskModel.deleteMany({ idProject: id })
+      await UserModel.updateMany({ projects: id }, { $pull: { projects: id } })
+      // const teams = await ProjectModel.findById(id).select('teams')
+      // const teams = await TeamModel.find({ idProject: id })
+      // // await TeamModel.deleteMany({ idProject: id })
+      // await TaskModel.deleteMany({  })
+      // await ProjectModel.findByIdAndDelete(id)
       return { success: true, message: 'El proyecto fue eliminado exitosamente.' }
     } catch (error) {
       return { fail: true, error }

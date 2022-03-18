@@ -1,5 +1,4 @@
 const { mongoose } = require('../config/database')
-const uniqueValidator = require('mongoose-unique-validator')
 
 const memberSchema = new mongoose.Schema({
   _id: {
@@ -17,7 +16,6 @@ const memberSchema = new mongoose.Schema({
     required: [true, 'Ingrese el rol de los miembros del equipo.']
   }
 })
-// memberSchema.plugin(uniqueValidator)
 
 const teamSchema = mongoose.Schema({
   name: {
@@ -46,7 +44,7 @@ const teamSchema = mongoose.Schema({
       ref: 'tasks'
     }
   ]
-})
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 
 const teamModel = mongoose.model('teams', teamSchema)
 module.exports = teamModel

@@ -43,7 +43,7 @@ const projectSchema = new mongoose.Schema({
     }
   ]
 
-})
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 projectSchema.plugin(uniqueValidator)
 
 const projectModel = mongoose.model('projects', projectSchema)

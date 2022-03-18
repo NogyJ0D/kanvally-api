@@ -29,12 +29,6 @@ const userSchema = new mongoose.Schema({
 
   password: String,
 
-  createdAt: {
-    type: Date,
-    default: () => Date.now(),
-    immutable: [true, 'No puede alterar la fecha de creación de un usuario.']
-  },
-
   role: {
     type: Number,
     enum: [[0, 1, 2], 'El rol del usuario debe ser 0, 1 o 2'],
@@ -55,7 +49,7 @@ const userSchema = new mongoose.Schema({
 
   provider: String,
   idProvider: String
-})
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 userSchema.plugin(uniqueValidator)
 
 const userModel = mongoose.model('users', userSchema)
