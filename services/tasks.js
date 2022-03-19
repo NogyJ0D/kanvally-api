@@ -35,8 +35,7 @@ class Tasks {
   async changeState (id, data) {
     return TaskModel.findByIdAndUpdate(id, { state: data.state }, { new: true, runValidators: true })
       .then(res => {
-        console.log(res)
-        return { success: true, message: 'El estado de la tarea fue cambiado con éxito.' }
+        return res
       })
       .catch(error => { return this.validate(error) })
   }

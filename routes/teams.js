@@ -16,13 +16,8 @@ const teams = app => {
       : res.status(200).json(teams)
   })
 
-  router.get('/:id/:filter', isRegular, async (req, res) => {
-    const { id, filter } = req.params
-    let response
-
-    if (filter === 'team') response = await teamService.getById(id)
-    else if (filter === 'project') response = await teamService.GetByProject(id)
-    else response = { fail: true, error: 'Debe ingresar un filtro (team - project).' }
+  router.get('/:id', isRegular, async (req, res) => {
+    const response = await teamService.getById(req.params.id)
 
     response.fail
       ? res.status(400).json(response)
@@ -74,7 +69,7 @@ const teams = app => {
 
     team.fail
       ? res.status(400).json(team)
-      : res.status(200).json(team)
+      : res.status(204).json(team)
   })
 }
 

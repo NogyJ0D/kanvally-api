@@ -51,7 +51,7 @@ const tasks = app => {
 
     task.fail
       ? res.status(400).json(task)
-      : res.status(200).json(task)
+      : res.status(204).json(task)
   })
 }
 

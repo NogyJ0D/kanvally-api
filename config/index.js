@@ -22,7 +22,9 @@ const config = {
   emailPort: process.env.EMAIL_PORT,
   emailSecure: process.env.EMAIL_SECURE,
   emailUser: process.env.EMAIL_USER,
-  emailPassword: process.env.EMAIL_PASSWORD
+  emailPassword: process.env.EMAIL_PASSWORD,
+  // Files
+  bucketName: process.env.BUCKET_NAME
 }
 
 module.exports = config

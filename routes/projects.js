@@ -1,6 +1,8 @@
 const express = require('express')
 const { isRegular } = require('../middlewares/auth')
 const { isMyProject } = require('../middlewares/isMine')
+const { uploadFile } = require('../libs/storage')
+const upload = require('../middlewares/upload')
 
 const Project = require('../services/projects')
 const projects = app => {
@@ -36,6 +38,14 @@ const projects = app => {
       : res.status(201).json(project)
   })
 
+  router.post('/test', [isRegular, upload.single('image')], (req, res) => {
+    const file = req.file
+    // console.log(file)
+    uploadFile(file.originalname, req.file.buffer)
+
+    return res.json({ success: true })
+  })
+
   router.put('/:id', [isRegular, isMyProject], async (req, res) => {
     const project = await projectService.update(req.params.id, req.body)
 
@@ -65,7 +75,7 @@ const projects = app => {
 
     project.fail
       ? res.status(400).json(project)
-      : res.status(200).json(project)
+      : res.status(204).json(project)
   })
 }
 

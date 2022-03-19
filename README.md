@@ -1,6 +1,6 @@
 # kanvally-api
 
-Rol global de usuario:
+>Rol global de usuario:
   
   0 - Sin verificar   > No puede hacer nada
   
@@ -8,7 +8,7 @@ Rol global de usuario:
   
   2 - Administrador   > Puede hacer todo
 
-Rol de usuario por equipo:
+>Rol de usuario por equipo:
   
   1 - Miembro     > Realiza las tareas
   
@@ -16,18 +16,18 @@ Rol de usuario por equipo:
   
   3 - Líder       > Crea y edita las tareas
 
-Rol de usuario por proyecto:
+>Rol de usuario por proyecto:
   
   1 - Miembro
   
   2 - Jefe
 
-Rol máximo de proyecto: Jefe / Boss > Puede ver todos los equipos, tareas, usuarios y editarlos
+>Rol máximo de proyecto: Jefe / Boss > Puede ver todos los equipos, tareas, usuarios y editarlos
 
-Orden:
+>Orden:
   Proyecto > Equipos > Tareas
 
-Listas / Estados de tareas:
+>Listas / Estados de tareas:
   
   0 > Congelada
   
@@ -42,10 +42,8 @@ Listas / Estados de tareas:
   5 > Pendiente de aprobación
 
   6 > Completada
-  
 
 -------------------------------
-
 Listo:
   >Auth / Usuarios:
     login, validate, signup, logout, passport (google, spotify)
@@ -60,10 +58,8 @@ Listo:
     Crear/eliminar, crear/eliminar comentario, cambiar estado.
 
 -------------------------------
-
 Por hacer:
-
-  Manejo de archivos
+  >Manejo de archivos
 
   >Cosa que podría pero no quiero hacer: 
     >refactorizar todas las queries para que usen promesas
