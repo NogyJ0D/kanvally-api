@@ -2,6 +2,10 @@ const ProjectModel = require('../models/project')
 const UserModel = require('../models/user')
 const TeamModel = require('../models/team')
 const TaskModel = require('../models/task')
+const sendEmail = require('../libs/email')
+const jwt = require('jsonwebtoken')
+const { jwtSecret } = require('../config')
+const InvitationModel = require('../models/invitation')
 
 class Projects {
   // Ver proyectos
@@ -14,7 +18,7 @@ class Projects {
   }
 
   async getProjectTeams (id) {
-    try { return await ProjectModel.findById(id).select('name teams').populate('teams') } catch (error) { return { fail: true, error } }
+    try { return await ProjectModel.findById(id).populate('teams') } catch (error) { return { fail: true, error } }
   }
 
   async getProjectMembers (id) {
@@ -28,10 +32,15 @@ class Projects {
   // Modificar proyectos
   async create (data) {
     try {
-      const project = await new ProjectModel({ name: data.name, idBoss: data.idBoss, logo: data.logo || null, members: [{ _id: data.idBoss, role: 2 }] })
-      await UserModel.updateOne({ _id: data.idBoss }, { $push: { projects: project._id } })
-      return await project.save()
-      // return await project.save()
+      data.logo = data.logo || 'https://www.adaptivewfs.com/wp-content/uploads/2020/07/logo-placeholder-image.png'
+      return new ProjectModel({ name: data.name, idBoss: data.idBoss, logo: data.logo, members: [{ _id: data.idBoss, role: 2, confirmed: true }] }).save()
+        .then(res => {
+          if (res.fail) return res
+          else {
+            return UserModel.updateOne({ _id: data.idBoss }, { $push: { projects: res._id } })
+              .then(res => { return { success: true, message: 'El proyecto fue creado con éxito.' } })
+          }
+        })
     } catch (error) {
       const errorMessages = Object.keys(error.errors).map(e => {
         const err = error.errors[e]
@@ -47,27 +56,91 @@ class Projects {
     try { return await ProjectModel.findByIdAndUpdate(id, data, { runValidators: true, new: true }) } catch (error) { return { fail: true, error } }
   }
 
-  async invite (id, data) {
-    try {
-      await UserModel.updateOne({ _id: data.userid }, { $push: { projects: id } }, { runValidators: true })
-      await ProjectModel.updateOne({ _id: id }, { $push: { members: { _id: data.userid, role: data.role || 1 } } }, { runValidators: true })
-      return { success: true, message: 'El usuario fue añadido con éxito.' }
-    } catch (error) {
-      console.log(error)
-      const errorMessages = Object.keys(error.errors).map(e => {
-        const err = error.errors[e]
-        if (err.kind === 'unique') return 'Ese usuario ya fue invitado.'
-        return err.message
+  async invite (projectId, { userEmail, userRole }) {
+    const user = await UserModel.findOne({ email: userEmail, projects: { $ne: projectId } })
+    if (!user) return { fail: true, err: 'Ese email no está registrado o el usuario ya es miembro del proyecto.' }
+
+    const project = await ProjectModel.findOne({ _id: projectId, 'members._id': { $ne: user._id } })
+    if (!project) return { fail: true, err: 'El proyecto no existe o el usuario ya es miembro.' }
+
+    const invitation = await InvitationModel.findOne({ user: user._id, project: projectId })
+    if (invitation) return { fail: true, err: 'La invitación ya fue mandada anteriormente y está a espera de confirmación.' }
+
+    return new InvitationModel({ user: user._id, project: projectId, userRole }).save()
+      .then(async (res) => {
+        console.log(res)
+        const emailToken = jwt.sign({ user: user._id, project: projectId, userRole, invitationId: res._id }, jwtSecret, { expiresIn: '7d' })
+
+        await sendEmail(
+          userEmail,
+          'Kanvally - Invitación a proyecto',
+            `Te han invitado al proyecto "${project.name}"`,
+            `<h1>Te han invitado al proyecto "${project.name}"</h1>
+            <br>
+            <a href='http://localhost:4000/projects/confirm/${emailToken}'>Aceptar la invitación</a>
+            <small>Esta invitación vencerá en 7 días.</small>`
+        )
+
+        return { success: true, message: 'La invitación ha sido enviada exitosamente.' }
       })
-      return { fail: true, errorMessages }
+
+    // else {
+    //   return ProjectModel.findOne({
+    //     $and: [
+    //       { _id: projectId },
+    //       { 'members._id': { $ne: user._id } }
+    //     ]
+    //   }
+    //   // { $push: { members: { _id: user._id, role: userRole } } }
+    //   )
+    //     .then(async res => {
+    //       if (!res) return { fail: true, err: 'El proyecto no existe o el usuario ya fue invitado.' }
+    //       else {
+    //         const emailToken = jwt.sign({ id: user._id, projectId: res._id }, jwtSecret, { expiresIn: '7d' })
+    //         await sendEmail(
+    //           userEmail,
+    //           'Kanvally - Invitación a proyecto',
+    //             `Te han invitado al proyecto "${res.name}"`,
+    //             `<h1>Te han invitado al proyecto "${res.name}"</h1>
+    //             <br>
+    //             <a href='http://localhost:4000/projects/confirm/${emailToken}'>Aceptar la invitación</a>
+    //             <small>Esta invitación vencerá en 7 días</small>`
+    //         )
+    //         return { success: true, message: 'El usuario fue invitado con éxito.' }
+    //       }
+    //     })
+    // }
+  }
+
+  async confirmInvite (token) {
+    try {
+      const { user, project, userRole, invitationId } = jwt.verify(token, jwtSecret)
+      console.log(invitationId)
+      await ProjectModel.findOneAndUpdate(
+        { _id: project },
+        { $push: { members: { _id: user, role: userRole } } })
+      await UserModel.findOneAndUpdate(
+        { _id: user },
+        { $push: { projects: project } })
+      await InvitationModel.findOneAndDelete({ _id: invitationId })
+      return { success: true, message: 'La invitación fue aceptada con éxito.' }
+    } catch (err) {
+      console.log(err)
+      return { fail: true, err }
     }
   }
 
   async expel (id, userId) {
     try {
-      await UserModel.updateOne({ _id: userId }, { $pull: { projects: id } })
-      await TeamModel.updateMany({ 'members._id': userId }, { $pull: { members: { _id: userId } } })
-      await ProjectModel.updateOne({ _id: id }, { $pull: { members: { _id: userId } } })
+      await UserModel.updateOne(
+        { _id: userId },
+        { $pull: { projects: id } })
+      await TeamModel.updateMany(
+        { 'members._id': userId },
+        { $pull: { members: { _id: userId } } })
+      await ProjectModel.updateOne(
+        { _id: id },
+        { $pull: { members: { _id: userId } } })
       return { success: true, message: 'El usuario fue expulsado del proyecto exitosamente.' }
     } catch (error) { return { fail: true, error } }
   }

@@ -13,7 +13,7 @@ const users = app => {
     return res.status(200).json(users)
   })
 
-  router.get('/:id/:filter', async (req, res) => {
+  router.get('/:id/:filter', isRegular, async (req, res) => {
     const { id, filter } = req.params
     let response
 

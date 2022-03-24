@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const { jwtSecret } = require('../config')
+const projectModel = require('../models/project')
 const Project = require('../services/projects')
 const Team = require('../services/teams')
 
@@ -19,6 +20,12 @@ const isMyProject = async (req, res, next) => {
   } catch (error) {
     return res.status(404).json({ fail: true, error: 'El proyecto no existe.' })
   }
+}
+
+const isInProject = (req, res, next) => {
+  return projectModel.findOne({ _id: req.params.id, 'members._id': req.params.userid })
+    .then(res => { return next() })
+    .catch(() => { return res.status(404).json(({ fail: true, err: 'No existe un proyecto con esos parámetros.' })) })
 }
 
 const isMyTeam = async (req, res, next) => {
@@ -51,4 +58,4 @@ const isMember = async (req, res, next) => {
   } catch (err) { return res.status(404).json({ fail: true, error: 'El equipo no existe.' }) }
 }
 
-module.exports = { isMyProject, isMyTeam, isMember }
+module.exports = { isMyProject, isMyTeam, isInProject, isMember }

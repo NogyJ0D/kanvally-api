@@ -1,6 +1,7 @@
 const express = require('express')
 const { isMyProject, isMyTeam } = require('../middlewares/isMine')
 const { isRegular } = require('../middlewares/auth')
+const upload = require('../middlewares/upload')
 
 const Team = require('../services/teams')
 const teams = app => {
@@ -24,13 +25,19 @@ const teams = app => {
       : res.status(200).json(response)
   })
 
-  router.post('/:id', [isRegular, isMyProject], async (req, res) => {
-    const team = await teamService.create(req.params.id, req.body)
+  router.post('/:id', [isRegular, isMyProject, upload.single('img')], async (req, res) => {
+    const team = await teamService.create(req.params.id, req.body, req.file)
 
     team.fail
       ? res.status(400).json(team)
       : res.status(201).json(team)
   })
+
+  //   router.post('/test', [isRegular, upload.single('image')], (req, res) => {
+  //     const file = req.file
+
+  //     return res.json({ success: true })
+  //   })
 
   router.put('/edit/:id/', [isRegular, isMyTeam], async (req, res) => {
     const team = await teamService.update(req.params.id, req.body)

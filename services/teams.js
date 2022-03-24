@@ -1,5 +1,6 @@
 const ProjectModel = require('../models/project')
 const TeamModel = require('../models/team')
+const { uploadFile } = require('../libs/storage')
 
 class Teams {
   validate (error) {
@@ -28,10 +29,13 @@ class Teams {
     try { return await ProjectModel.findById(id).select('name teams').populate('teams', 'name members') } catch (error) { return { fail: true, error } }
   }
 
-  async create (id, data) {
+  async create (id, data, file) {
     try {
+      const uploaded = await uploadFile(file.originalname, file.buffer)
+
       const savedTeam = await new TeamModel({
         name: data.name,
+        coverImage: uploaded.fileName,
         idLeader: data.idLeader,
         idProject: id,
         members: [{

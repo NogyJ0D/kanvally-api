@@ -14,8 +14,12 @@ class Auth {
     const data = {
       username: user.username,
       email: user.email,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      id: user.id,
       role: user.role,
-      id: user.id
+      profile_pic: user.profile_pic,
+      projects: user.projects
     }
     const token = jwt.sign(data, jwtSecret, { expiresIn: '7d' })
     return { data, token }
@@ -27,8 +31,9 @@ class Auth {
     }
 
     const user = await this.users.getByFilter({ email })
-    if (user.idProvider) return { fail: true, err: 'Debes iniciar con el mismo servicio con el que te registraste.' }
-    if (user) {
+    console.log(user)
+    if (user?.idProvider) return { fail: true, err: 'Debes iniciar con el mismo servicio con el que te registraste.' }
+    else if (user) {
       const dehashedPassword = await bcrypt.compare(password, user.password)
       if (dehashedPassword) {
         return this.getToken(user)

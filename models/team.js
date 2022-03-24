@@ -24,6 +24,8 @@ const teamSchema = mongoose.Schema({
     maxlength: [32, 'El nombre del equipo no puede tener mas de 32 caracteres.']
   },
 
+  coverImage: String,
+
   idProject: {
     type: mongoose.SchemaTypes.ObjectId,
     required: [true, 'Ingrese el id del proyecto al que pertenece.'],

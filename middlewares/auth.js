@@ -25,6 +25,11 @@ const useSpotifyStrategy = () => {
 }
 
 // 1
+const isNew = (req, res, next) => {
+  req.neededRole = 0
+  verifyToken(req, res, next)
+}
+
 const isRegular = (req, res, next) => {
   req.neededRole = 1
   verifyToken(req, res, next)
@@ -80,4 +85,4 @@ const validateRole = (req, res, next) => {
   }
 }
 
-module.exports = { isRegular, isAdmin, useGoogleStrategy, useSpotifyStrategy }
+module.exports = { isNew, isRegular, isAdmin, useGoogleStrategy, useSpotifyStrategy }

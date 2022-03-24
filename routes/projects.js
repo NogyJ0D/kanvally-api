@@ -1,7 +1,6 @@
 const express = require('express')
 const { isRegular } = require('../middlewares/auth')
-const { isMyProject } = require('../middlewares/isMine')
-const { uploadFile } = require('../libs/storage')
+const { isMyProject, isMember, isInProject } = require('../middlewares/isMine')
 const upload = require('../middlewares/upload')
 
 const Project = require('../services/projects')
@@ -16,8 +15,8 @@ const projects = app => {
     return res.status(200).json(projects)
   })
 
-  router.get('/:id/:filter', [isRegular, isMyProject], async (req, res) => {
-    const { id, filter } = req.params
+  router.get('/:id/:userid/:filter', [isRegular, isInProject], async (req, res) => {
+    const { id, userid, filter } = req.params
     let response
     if (filter === 'normal') response = await projectService.getProject(id)
     else if (filter === 'members') response = await projectService.getProjectMembers(id)
@@ -32,18 +31,10 @@ const projects = app => {
 
   router.post('/', isRegular, async (req, res) => {
     const project = await projectService.create(req.body)
-
+    console.log(project)
     project.fail
       ? res.status(400).json(project)
       : res.status(201).json(project)
-  })
-
-  router.post('/test', [isRegular, upload.single('image')], (req, res) => {
-    const file = req.file
-    // console.log(file)
-    uploadFile(file.originalname, req.file.buffer)
-
-    return res.json({ success: true })
   })
 
   router.put('/:id', [isRegular, isMyProject], async (req, res) => {
@@ -54,8 +45,17 @@ const projects = app => {
       : res.status(200).json(project)
   })
 
-  router.put('/invite/:id', [isRegular, isMyProject], async (req, res) => {
+  router.put('/invite/projectid/:id', [isRegular, isMyProject], async (req, res) => {
     const project = await projectService.invite(req.params.id, req.body)
+
+    project.fail
+      ? res.status(400).json(project)
+      : res.status(200).json(project)
+  })
+
+  router.get('/confirm/:token', isRegular, async (req, res) => {
+    const { token } = req.params
+    const project = await projectService.confirmInvite(token)
 
     project.fail
       ? res.status(400).json(project)

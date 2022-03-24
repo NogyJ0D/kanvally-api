@@ -60,6 +60,7 @@ Listo:
 -------------------------------
 Por hacer:
   >Manejo de archivos
+  TODO: completar esto
 
   >Cosa que podría pero no quiero hacer: 
     >refactorizar todas las queries para que usen promesas

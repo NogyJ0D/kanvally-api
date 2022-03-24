@@ -6,7 +6,7 @@ class Users {
   }
 
   async getByFilter (filter) {
-    try { return await UserModel.findOne(filter) } catch (error) { return { fail: true, error } }
+    try { return await UserModel.findOne(filter).populate({ path: 'projects', select: 'name logo' }) } catch (error) { return { fail: true, error } }
   }
 
   async getById (id) {
@@ -14,7 +14,7 @@ class Users {
   }
 
   async getProjects (id) {
-    return await UserModel.findById(id).select('projects').populate('projects', 'name')
+    return await UserModel.findById(id).select('projects').populate('projects', 'name logo')
   }
 
   async create (data) {

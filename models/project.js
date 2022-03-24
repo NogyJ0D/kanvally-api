@@ -5,7 +5,6 @@ const projectSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Ingrese el nombre del proyecto.'],
-    unique: true,
     maxlength: [32, 'El nombre del proyecto no puede tener mas de 32 caracteres.']
   },
 
@@ -23,8 +22,7 @@ const projectSchema = new mongoose.Schema({
   teams: [
     {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: 'teams',
-      unique: true
+      ref: 'teams'
     }
   ],
 

@@ -1,7 +1,7 @@
 const express = require('express')
 const passport = require('passport')
 const tokenCookie = require('../helpers/tokenCookie')
-const { isRegular, useGoogleStrategy, useSpotifyStrategy } = require('../middlewares/auth')
+const { useGoogleStrategy, useSpotifyStrategy, isNew } = require('../middlewares/auth')
 
 const Auth = require('../services/auth')
 const auth = app => {
@@ -24,7 +24,7 @@ const auth = app => {
     else return tokenCookie(res, response)
   })
 
-  router.post('/validate', isRegular, (req, res) => {
+  router.post('/validate', isNew, (req, res) => {
     return res.json(req.user)
   })
 
@@ -40,7 +40,7 @@ const auth = app => {
   router.post('/signup', async (req, res) => {
     const user = req.body
     const response = await authService.signup(user)
-
+    console.log(response)
     if (response.fail || response.errors) return res.json(response)
     else return tokenCookie(res, response)
   })
