@@ -1,7 +1,7 @@
 const express = require('express')
 const { isRegular } = require('../middlewares/auth')
-const { isMember, isMyTeam } = require('../middlewares/isMine')
-const { canChangeState } = require('../middlewares/teams')
+const { isMyTeam } = require('../middlewares/isMine')
+const { canChangeState, isMember } = require('../middlewares/teams')
 
 const Task = require('../services/tasks')
 const tasks = app => {
@@ -25,20 +25,20 @@ const tasks = app => {
       : res.status(201).json(task)
   })
 
-  router.put('/state/:id', [isRegular, isMember, canChangeState], async (req, res) => {
-    const task = await taskService.changeState(req.params.id, req.body)
+  router.put('/state/team/:idTeam/task/:idTask', [isRegular, isMember, canChangeState], async (req, res) => {
+    const task = await taskService.changeState(req.params.idTask, req.body)
 
     task.fail
       ? res.status(400).json(task)
       : res.status(200).json(task)
   })
 
-  router.put('/comment/:option/:id', [isRegular, isMember], async (req, res) => {
-    const { option, id } = req.params
+  router.put('/comment/team/:idTeam/option/:option/idTask/:idTask', [isRegular, isMember], async (req, res) => {
+    const { option, idTask } = req.params
     let comment
 
-    if (option === 'add') comment = await taskService.addComment(id, req.body)
-    else if (option === 'delete') comment = await taskService.deleteComment(id, req.body)
+    if (option === 'add') comment = await taskService.addComment(idTask, req.body)
+    else if (option === 'delete') comment = await taskService.deleteComment(idTask, req.body)
     else return res.status(400).json({ fail: true, error: 'Debe ingresar una opción (add - delete).' })
 
     comment.fail

@@ -47,15 +47,4 @@ const isMyTeam = async (req, res, next) => {
   }
 }
 
-const isMember = async (req, res, next) => {
-  try {
-    const user = jwt.verify(req.cookies.token, jwtSecret)
-    const team = await new Team().getById(req.body.idTeam)
-
-    if (team.fail) throw Error
-    else if (team.members.filter(member => member._id.toString() === user.id).length > 0) return next()
-    else return res.status(403).json({ fail: true, error: 'El usuario no es parte del equipo.' })
-  } catch (err) { return res.status(404).json({ fail: true, error: 'El equipo no existe.' }) }
-}
-
-module.exports = { isMyProject, isMyTeam, isInProject, isMember }
+module.exports = { isMyProject, isMyTeam, isInProject }

@@ -53,7 +53,6 @@ class Tasks {
   async addComment (id, data) {
     return TaskModel.findByIdAndUpdate(id, { $push: { comments: { username: data.username, text: data.text } } }, { runValidators: true, new: true })
       .then(res => {
-        console.log(res)
         return res
       })
       .catch(err => { return this.validate(err) })

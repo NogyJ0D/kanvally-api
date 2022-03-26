@@ -1,6 +1,6 @@
 const express = require('express')
 const { isRegular } = require('../middlewares/auth')
-const { isMyProject, isMember, isInProject } = require('../middlewares/isMine')
+const { isMyProject, isInProject } = require('../middlewares/isMine')
 const upload = require('../middlewares/upload')
 
 const Project = require('../services/projects')
@@ -16,7 +16,7 @@ const projects = app => {
   })
 
   router.get('/:id/:userid/:filter', [isRegular, isInProject], async (req, res) => {
-    const { id, userid, filter } = req.params
+    const { id, filter } = req.params
     let response
     if (filter === 'normal') response = await projectService.getProject(id)
     else if (filter === 'members') response = await projectService.getProjectMembers(id)
@@ -29,9 +29,9 @@ const projects = app => {
       : res.status(200).json(response)
   })
 
-  router.post('/', isRegular, async (req, res) => {
-    const project = await projectService.create(req.body)
-    console.log(project)
+  router.post('/', [isRegular, upload.single('logo')], async (req, res) => {
+    const project = await projectService.create(req.body, req.file)
+
     project.fail
       ? res.status(400).json(project)
       : res.status(201).json(project)

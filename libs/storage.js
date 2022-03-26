@@ -6,8 +6,10 @@ const path = require('path')
 
 const storage = new Storage({ keyFilename: 'credentials-gcloud.json' })
 
-const uploadFile = (filename, buffer) => {
-  const ext = path.extname(filename)
+const uploadFile = (fileName, buffer) => {
+  if (!fileName || !buffer) return { fail: true, err: 'Se requiere un archivo.' }
+
+  const ext = path.extname(fileName)
   const uuidFileName = uuid.v4() + ext
 
   const file = storage.bucket(bucketName).file(uuidFileName)
@@ -18,8 +20,9 @@ const uploadFile = (filename, buffer) => {
       .pipe(file.createWriteStream())
       .on('finish', () => {
         resolve({
-          uploaded: true,
-          message: 'El archivo fue cargado exitosamente.'
+          success: true,
+          message: 'El archivo fue cargado exitosamente.',
+          fileName: uuidFileName
         })
       })
       .on('error', (err) => {
@@ -31,19 +34,11 @@ const uploadFile = (filename, buffer) => {
 
 const downloadFile = (fileName, res) => {
   const file = storage.bucket(bucketName).file(fileName)
-
   const stream = file.createReadStream()
-
-  stream.pipe(res)
-    .on('finish', () => {
-      console.log({
-        uploaded: true,
-        message: 'El archivo fue descargado exitosamente.'
-      })
-    })
     .on('error', (err) => {
-      console.log({ fail: true, err })
+      if (err.code === 404) res.status(404).json({ fail: true, err: 'No se encontró el archivo.' })
     })
+  stream.pipe(res)
 }
 
 module.exports = { uploadFile, downloadFile }

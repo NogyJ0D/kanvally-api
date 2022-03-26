@@ -6,8 +6,18 @@ const sendEmail = require('../libs/email')
 const jwt = require('jsonwebtoken')
 const { jwtSecret } = require('../config')
 const InvitationModel = require('../models/invitation')
+const { uploadFile } = require('../libs/storage')
 
 class Projects {
+  validate (error) {
+    const errorMessages = Object.keys(error.errors).map(e => {
+      const err = error.errors[e]
+      if (err.kind === 'unique') return 'Ya existe un proyecto con ese nombre, intente con otro.'
+      return err.message
+    })
+    return { fail: true, errorMessages }
+  }
+
   // Ver proyectos
   async getAll () {
     return await ProjectModel.find()
@@ -30,10 +40,25 @@ class Projects {
   }
 
   // Modificar proyectos
-  async create (data) {
-    try {
-      data.logo = data.logo || 'https://www.adaptivewfs.com/wp-content/uploads/2020/07/logo-placeholder-image.png'
-      return new ProjectModel({ name: data.name, idBoss: data.idBoss, logo: data.logo, members: [{ _id: data.idBoss, role: 2, confirmed: true }] }).save()
+  async create (data, file) {
+    let uploaded
+    if (file) uploaded = await uploadFile(file?.originalname, file?.buffer)
+    if (uploaded?.success) {
+      const fileKey = uploaded.fileName
+      const logoUrl = `/files/${uploaded.fileName}`
+      return new ProjectModel(
+        {
+          name: data.name,
+          idBoss: data.idBoss,
+          fileKey,
+          logoUrl,
+          members: [{
+            _id: data.idBoss,
+            role: 2,
+            confirmed: true
+          }]
+        })
+        .save()
         .then(res => {
           if (res.fail) return res
           else {
@@ -41,13 +66,27 @@ class Projects {
               .then(res => { return { success: true, message: 'El proyecto fue creado con éxito.' } })
           }
         })
-    } catch (error) {
-      const errorMessages = Object.keys(error.errors).map(e => {
-        const err = error.errors[e]
-        if (err.kind === 'unique') return 'Ya existe un proyecto con ese nombre, intente con otro.'
-        return err.message
-      })
-      return { fail: true, errorMessages }
+        .catch(error => { return this.validate(error) })
+    } else {
+      return new ProjectModel(
+        {
+          name: data.name,
+          idBoss: data.idBoss,
+          members: [{
+            _id: data.idBoss,
+            role: 2,
+            confirmed: true
+          }]
+        })
+        .save()
+        .then(res => {
+          if (res.fail) return res
+          else {
+            return UserModel.updateOne({ _id: data.idBoss }, { $push: { projects: res._id } })
+              .then(res => { return { success: true, message: 'El proyecto fue creado con éxito.' } })
+          }
+        })
+        .catch(error => { return this.validate(error) })
     }
   }
 
@@ -68,7 +107,6 @@ class Projects {
 
     return new InvitationModel({ user: user._id, project: projectId, userRole }).save()
       .then(async (res) => {
-        console.log(res)
         const emailToken = jwt.sign({ user: user._id, project: projectId, userRole, invitationId: res._id }, jwtSecret, { expiresIn: '7d' })
 
         await sendEmail(
@@ -83,39 +121,11 @@ class Projects {
 
         return { success: true, message: 'La invitación ha sido enviada exitosamente.' }
       })
-
-    // else {
-    //   return ProjectModel.findOne({
-    //     $and: [
-    //       { _id: projectId },
-    //       { 'members._id': { $ne: user._id } }
-    //     ]
-    //   }
-    //   // { $push: { members: { _id: user._id, role: userRole } } }
-    //   )
-    //     .then(async res => {
-    //       if (!res) return { fail: true, err: 'El proyecto no existe o el usuario ya fue invitado.' }
-    //       else {
-    //         const emailToken = jwt.sign({ id: user._id, projectId: res._id }, jwtSecret, { expiresIn: '7d' })
-    //         await sendEmail(
-    //           userEmail,
-    //           'Kanvally - Invitación a proyecto',
-    //             `Te han invitado al proyecto "${res.name}"`,
-    //             `<h1>Te han invitado al proyecto "${res.name}"</h1>
-    //             <br>
-    //             <a href='http://localhost:4000/projects/confirm/${emailToken}'>Aceptar la invitación</a>
-    //             <small>Esta invitación vencerá en 7 días</small>`
-    //         )
-    //         return { success: true, message: 'El usuario fue invitado con éxito.' }
-    //       }
-    //     })
-    // }
   }
 
   async confirmInvite (token) {
     try {
       const { user, project, userRole, invitationId } = jwt.verify(token, jwtSecret)
-      console.log(invitationId)
       await ProjectModel.findOneAndUpdate(
         { _id: project },
         { $push: { members: { _id: user, role: userRole } } })
@@ -125,7 +135,6 @@ class Projects {
       await InvitationModel.findOneAndDelete({ _id: invitationId })
       return { success: true, message: 'La invitación fue aceptada con éxito.' }
     } catch (err) {
-      console.log(err)
       return { fail: true, err }
     }
   }

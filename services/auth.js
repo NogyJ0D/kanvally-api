@@ -21,7 +21,7 @@ class Auth {
       profile_pic: user.profile_pic,
       projects: user.projects
     }
-    const token = jwt.sign(data, jwtSecret, { expiresIn: '7d' })
+    const token = jwt.sign({ username: data.username, email: data.email, id: data.id, role: data.role }, jwtSecret, { expiresIn: '7d' })
     return { data, token }
   }
 
@@ -31,7 +31,7 @@ class Auth {
     }
 
     const user = await this.users.getByFilter({ email })
-    console.log(user)
+
     if (user?.idProvider) return { fail: true, err: 'Debes iniciar con el mismo servicio con el que te registraste.' }
     else if (user) {
       const dehashedPassword = await bcrypt.compare(password, user.password)

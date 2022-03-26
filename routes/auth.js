@@ -40,7 +40,7 @@ const auth = app => {
   router.post('/signup', async (req, res) => {
     const user = req.body
     const response = await authService.signup(user)
-    console.log(response)
+
     if (response.fail || response.errors) return res.json(response)
     else return tokenCookie(res, response)
   })

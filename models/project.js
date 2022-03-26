@@ -14,10 +14,8 @@ const projectSchema = new mongoose.Schema({
     ref: 'users'
   },
 
-  logo: {
-    type: String,
-    default: 'https://www.adaptivewfs.com/wp-content/uploads/2020/07/logo-placeholder-image.png'
-  },
+  fileKey: String,
+  logoUrl: String,
 
   teams: [
     {

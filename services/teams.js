@@ -1,12 +1,13 @@
 const ProjectModel = require('../models/project')
 const TeamModel = require('../models/team')
 const { uploadFile } = require('../libs/storage')
+const UserModel = require('../models/user')
 
 class Teams {
   validate (error) {
     const errorMessages = Object.keys(error.errors).map(e => {
       const err = error.errors[e]
-      // if (err.kind === 'unique') return 'Ya existe un equipo en tu proyecto con ese nombre, intente otro.'
+      if (err.kind === 'unique') return 'Ya existe un equipo en tu proyecto con ese nombre, intente otro.'
       return err.message
     })
     return { fail: true, errorMessages }
@@ -20,8 +21,7 @@ class Teams {
 
   async getById (id) {
     try {
-      const team = await TeamModel.findById(id).populate('members')
-      return team
+      return TeamModel.findById(id).populate('members tasks')
     } catch (error) { return { fail: true, error: 'El equipo no existe.' } }
   }
 
@@ -29,32 +29,29 @@ class Teams {
     try { return await ProjectModel.findById(id).select('name teams').populate('teams', 'name members') } catch (error) { return { fail: true, error } }
   }
 
-  async create (id, data, file) {
-    try {
-      const uploaded = await uploadFile(file.originalname, file.buffer)
+  async create (id, data) {
+    // const user = await UserModel.findOne({ email: data.leaderEmail })
+    // if (!user) return { fail: true, err: 'No existe un usuario con ese email.' }
+    // else if (!user.projects.some(el => el === id)) { return { fail: true, err: 'El usuario no es miembro del proyecto.' } }
+    const project = await ProjectModel.findOne({ _id: id, 'members._id': data.idLeader })
+    if (!project) return { fail: true, err: 'El usuario no es miembro del proyecto.' }
 
-      const savedTeam = await new TeamModel({
-        name: data.name,
-        coverImage: uploaded.fileName,
-        idLeader: data.idLeader,
-        idProject: id,
-        members: [{
-          _id: data.idLeader,
-          role: 'Líder'
-        }]
-      }).save()
-      await ProjectModel.updateOne({ _id: id }, { $push: { teams: { _id: savedTeam._id } } })
-      return savedTeam
-    } catch (error) {
-      console.log(error)
-      const errorMessages = Object.keys(error.errors).map(e => {
-        const err = error.errors[e]
-        console.log(err)
-        if (err.kind === 'unique') return 'Ya existe un equipo en tu proyecto con ese nombre, intente otro.'
-        return err.message
+    return new TeamModel({
+      name: data.name,
+      // coverImage: uploaded.fileName,
+      idLeader: data.idLeader,
+      idProject: id,
+      members: [{
+        _id: data.idLeader,
+        role: 'Líder'
+      }]
+    }).save()
+      .then(res => {
+        return ProjectModel.updateOne({ _id: id }, { $push: { teams: { _id: res._id } } })
+          .then(() => { return { success: true, message: 'El equipo fue creado exitosamente.' } })
+          .catch(error => { return this.validate(error) })
       })
-      return { fail: true, errorMessages }
-    }
+      .catch(error => { return this.validate(error) })
   }
 
   async addUser (id, { userid, role }) {

@@ -38,7 +38,8 @@ const taskSchema = new mongoose.Schema({
     required: [true, 'Ingrese la descripción de la tarea.']
   },
 
-  cover_image: String,
+  fileKey: String,
+  logoUrl: String,
 
   comments: [
     {
