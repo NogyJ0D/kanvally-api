@@ -26,7 +26,7 @@ const tasks = app => {
   })
 
   router.put('/state/team/:idTeam/task/:idTask', [isRegular, isMember, canChangeState], async (req, res) => {
-    const task = await taskService.changeState(req.params.idTask, req.body)
+    const task = await taskService.changeState(req.params.idTask, req.params.idTeam, req.body)
 
     task.fail
       ? res.status(400).json(task)

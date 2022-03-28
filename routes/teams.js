@@ -26,7 +26,7 @@ const teams = app => {
       : res.status(200).json(response)
   })
 
-  router.post('/:id', [isRegular, isMyProject], async (req, res) => {
+  router.post('/:id', [isRegular, isMyProject, upload.single('logo')], async (req, res) => {
     const team = await teamService.create(req.params.id, req.body, req.file)
 
     team.fail

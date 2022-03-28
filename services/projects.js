@@ -72,6 +72,8 @@ class Projects {
         {
           name: data.name,
           idBoss: data.idBoss,
+          fileKey: 'kelly-sikkema-N3o-leQyFsI-unsplash.jpg',
+          logoUrl: '/files/kelly-sikkema-N3o-leQyFsI-unsplash.jpg',
           members: [{
             _id: data.idBoss,
             role: 2,

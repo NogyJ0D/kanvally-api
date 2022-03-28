@@ -14,8 +14,14 @@ const projectSchema = new mongoose.Schema({
     ref: 'users'
   },
 
-  fileKey: String,
-  logoUrl: String,
+  fileKey: {
+    type: String,
+    default: 'kelly-sikkema-N3o-leQyFsI-unsplash.jpg'
+  },
+  logoUrl: {
+    type: String,
+    default: '/files/kelly-sikkema-N3o-leQyFsI-unsplash.jpg'
+  },
 
   teams: [
     {

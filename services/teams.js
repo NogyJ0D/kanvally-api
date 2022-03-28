@@ -21,7 +21,10 @@ class Teams {
 
   async getById (id) {
     try {
-      return TeamModel.findById(id).populate('members tasks')
+      const team = await TeamModel.findById(id).populate({
+        path: 'tasks.0._id tasks.1._id tasks.2._id tasks.3._id tasks.4._id tasks.5._id tasks.6._id'
+      }).populate('members._id', '_id username email')
+      return team
     } catch (error) { return { fail: true, error: 'El equipo no existe.' } }
   }
 
@@ -29,29 +32,72 @@ class Teams {
     try { return await ProjectModel.findById(id).select('name teams').populate('teams', 'name members') } catch (error) { return { fail: true, error } }
   }
 
-  async create (id, data) {
-    // const user = await UserModel.findOne({ email: data.leaderEmail })
-    // if (!user) return { fail: true, err: 'No existe un usuario con ese email.' }
-    // else if (!user.projects.some(el => el === id)) { return { fail: true, err: 'El usuario no es miembro del proyecto.' } }
+  async create (id, data, file) {
     const project = await ProjectModel.findOne({ _id: id, 'members._id': data.idLeader })
     if (!project) return { fail: true, err: 'El usuario no es miembro del proyecto.' }
 
-    return new TeamModel({
-      name: data.name,
-      // coverImage: uploaded.fileName,
-      idLeader: data.idLeader,
-      idProject: id,
-      members: [{
-        _id: data.idLeader,
-        role: 'Líder'
-      }]
-    }).save()
-      .then(res => {
-        return ProjectModel.updateOne({ _id: id }, { $push: { teams: { _id: res._id } } })
-          .then(() => { return { success: true, message: 'El equipo fue creado exitosamente.' } })
-          .catch(error => { return this.validate(error) })
-      })
-      .catch(error => { return this.validate(error) })
+    let uploaded
+    if (file) uploaded = await uploadFile(file?.originalname, file?.buffer)
+    if (uploaded?.success) {
+      const fileKey = uploaded.fileName
+      const logoUrl = `/files/${uploaded.fileName}`
+
+      return new TeamModel({
+        name: data.name,
+        // coverImage: uploaded.fileName,
+        idLeader: data.idLeader,
+        idProject: id,
+        fileKey,
+        logoUrl,
+        members: [{
+          _id: data.idLeader,
+          role: 'Líder'
+        }],
+        tasks: {
+          0: [],
+          1: [],
+          2: [],
+          3: [],
+          4: [],
+          5: [],
+          6: []
+        }
+      }).save()
+        .then(res => {
+          return ProjectModel.updateOne({ _id: id }, { $push: { teams: { _id: res._id } } })
+            .then(() => { return { success: true, message: 'El equipo fue creado exitosamente.' } })
+            .catch(error => { return this.validate(error) })
+        })
+        .catch(error => { return this.validate(error) })
+    } else {
+      return new TeamModel({
+        name: data.name,
+        // coverImage: uploaded.fileName,
+        idLeader: data.idLeader,
+        idProject: id,
+        fileKey: 'kelly-sikkema-N3o-leQyFsI-unsplash.jpg',
+        logoUrl: '/files/kelly-sikkema-N3o-leQyFsI-unsplash.jpg',
+        members: [{
+          _id: data.idLeader,
+          role: 'Líder'
+        }],
+        tasks: {
+          0: [],
+          1: [],
+          2: [],
+          3: [],
+          4: [],
+          5: [],
+          6: []
+        }
+      }).save()
+        .then(res => {
+          return ProjectModel.updateOne({ _id: id }, { $push: { teams: { _id: res._id } } })
+            .then(() => { return { success: true, message: 'El equipo fue creado exitosamente.' } })
+            .catch(error => { return this.validate(error) })
+        })
+        .catch(error => { return this.validate(error) })
+    }
   }
 
   async addUser (id, { userid, role }) {

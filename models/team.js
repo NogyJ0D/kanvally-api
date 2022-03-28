@@ -41,12 +41,57 @@ const teamSchema = mongoose.Schema({
 
   members: [memberSchema],
 
-  tasks: [
-    {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'tasks'
-    }
-  ]
+  tasks: {
+    0: [{
+      _id: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'tasks'
+      }
+    }],
+    1: [{
+      _id: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'tasks'
+      }
+    }],
+    2: [{
+      _id: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'tasks'
+      }
+    }],
+    3: [{
+      _id: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'tasks'
+      }
+    }],
+    4: [{
+      _id: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'tasks'
+      }
+    }],
+    5: [{
+      _id: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'tasks'
+      }
+    }],
+    6: [{
+      _id: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'tasks'
+      }
+    }]
+  }
+
+  // tasks: [
+  //   {
+  //     type: mongoose.SchemaTypes.ObjectId,
+  //     ref: 'tasks'
+  //   }
+  // ]
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 
 const teamModel = mongoose.model('teams', teamSchema)

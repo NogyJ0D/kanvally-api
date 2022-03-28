@@ -21,16 +21,21 @@ const taskSchema = new mongoose.Schema({
     default: 2
   },
 
-  author: {
+  authorId: {
     type: mongoose.SchemaTypes.ObjectId,
-    required: [true, 'Ingrese el id del autor de la tarea.'],
+    required: [true, 'Ingrese su id.'],
     ref: 'users'
+  },
+
+  author: {
+    type: String,
+    required: [true, 'Ingrese su nombre de usuario.']
   },
 
   name: {
     type: String,
     required: [true, 'Ingrese el nombre de la tarea.'],
-    maxlength: [16, 'El nombre de la tarea no puede tener mas de 16 caracteres.']
+    maxlength: [24, 'El nombre de la tarea no puede tener mas de 24 caracteres.']
   },
 
   description: {

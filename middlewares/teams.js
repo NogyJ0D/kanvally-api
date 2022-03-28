@@ -22,7 +22,7 @@ const isMember = async (req, res, next) => {
 const canChangeState = (req, res, next) => {
   const { id } = jwt.verify(req.cookies.token, jwtSecret)
 
-  return TeamModel.findOne({ _id: req.body.idTeam }, 'members')
+  return TeamModel.findOne({ _id: req.params.idTeam }, 'members')
     .then(result => {
       const member = result.members.filter(member => member._id.toString() === id)
       if (

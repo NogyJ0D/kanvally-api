@@ -76,7 +76,7 @@ const auth = app => {
       firstname: null,
       lastname: null,
       email: req.user.profile.emails[0].value || null,
-      role: 0,
+      role: 1,
       profile_pic: req.user.profile.photos[0].value || null,
       provider: req.user.profile.provider,
       idProvider: req.user.profile.id
