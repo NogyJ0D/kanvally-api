@@ -1,8 +1,8 @@
 const express = require('express')
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
-const morgan = require('morgan')
-const rfs = require('rotating-file-stream')
+// const morgan = require('morgan')
+// const rfs = require('rotating-file-stream')
 
 const app = express()
 
@@ -11,12 +11,12 @@ const { connection } = require('./config/database')
 connection()
 
 // Morgan files
-const rfsStream = rfs.createStream('./logs/log.txt', {
-  size: '10M',
-  interval: '1d',
-  compress: 'gzip'
-})
-app.use(morgan('common', { stream: rfsStream }))
+// const rfsStream = rfs.createStream('./logs/log.txt', {
+//   size: '10M',
+//   interval: '1d',
+//   compress: 'gzip'
+// })
+// app.use(morgan('common', { stream: rfsStream }))
 
 // Middleware
 app.use(express.json())
@@ -38,8 +38,6 @@ const usersRoutes = require('./routes/users')
 usersRoutes(app)
 const tasksRoutes = require('./routes/tasks')
 tasksRoutes(app)
-const filesRoutes = require('./routes/files')
-filesRoutes(app)
 
 // Starting
 const { port, env } = require('./config')

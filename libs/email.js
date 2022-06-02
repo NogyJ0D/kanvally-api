@@ -1,25 +1,19 @@
-const nodemailer = require('nodemailer')
-const { emailHost, emailPort, emailSecure, emailUser, emailPassword } = require('../config')
+const { emailKey } = require('../config')
+const sgMail = require('@sendgrid/mail')
 
-const transporter = nodemailer.createTransport({
-  host: emailHost,
-  port: emailPort,
-  secure: emailSecure,
-  auth: {
-    user: emailUser,
-    pass: emailPassword
-  }
-})
-
-const sendEmail = async (to, subject, text, html) => {
-  await transporter.sendMail({
-    from: 'valentingiarra2@gmail.com',
+sgMail.setApiKey(emailKey)
+const sendEmail = (to, subject, text, html) => {
+  sgMail.send({
     to,
+    from: 'valentingiarra2@gmail.com',
     subject,
     text,
     html
   })
-  return { success: true }
+    .then(() => {
+      console.log('Email sent')
+      return { success: true }
+    })
 }
 
 module.exports = sendEmail

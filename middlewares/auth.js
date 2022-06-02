@@ -1,29 +1,6 @@
 const jwt = require('jsonwebtoken')
 const config = require('../config')
 
-const GoogleStrategy = require('passport-google-oauth20').Strategy
-const SpotifyStrategy = require('passport-spotify').Strategy
-
-const useGoogleStrategy = () => {
-  return new GoogleStrategy({
-    clientID: config.googleClientId,
-    clientSecret: config.googleClientSecret,
-    callbackURL: config.callbackUrl + '/auth/google/callback'
-  }, (accessToken, refreshToken, profile, done) => {
-    done(null, { profile })
-  })
-}
-
-const useSpotifyStrategy = () => {
-  return new SpotifyStrategy({
-    clientID: config.spotifyClientId,
-    clientSecret: config.spotifyClientSecret,
-    callbackURL: config.callbackUrl + '/auth/spotify/callback'
-  }, (accessToken, refreshToken, profile, done) => {
-    done(null, { profile })
-  })
-}
-
 // 1
 const isNew = (req, res, next) => {
   req.neededRole = 0
@@ -85,4 +62,4 @@ const validateRole = (req, res, next) => {
   }
 }
 
-module.exports = { isNew, isRegular, isAdmin, useGoogleStrategy, useSpotifyStrategy }
+module.exports = { isNew, isRegular, isAdmin }

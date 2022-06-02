@@ -14,13 +14,9 @@ const projectSchema = new mongoose.Schema({
     ref: 'users'
   },
 
-  fileKey: {
-    type: String,
-    default: 'kelly-sikkema-N3o-leQyFsI-unsplash.jpg'
-  },
   logoUrl: {
     type: String,
-    default: '/files/kelly-sikkema-N3o-leQyFsI-unsplash.jpg'
+    default: 'https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png?w=640'
   },
 
   teams: [

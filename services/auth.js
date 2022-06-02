@@ -32,8 +32,7 @@ class Auth {
 
     const user = await this.users.getByFilter({ email })
 
-    if (user?.idProvider) return { fail: true, err: 'Debes iniciar con el mismo servicio con el que te registraste.' }
-    else if (user) {
+    if (user) {
       const dehashedPassword = await bcrypt.compare(password, user.password)
       if (dehashedPassword) {
         return this.getToken(user)
@@ -78,13 +77,6 @@ class Auth {
     } catch (err) {
       return { fail: true, err }
     }
-  }
-
-  async loginProvider (profile) {
-    let user = await this.users.getByFilter({ idProvider: profile.idProvider })
-
-    if (!user) user = await this.users.create(profile)
-    return this.getToken(user)
   }
 }
 

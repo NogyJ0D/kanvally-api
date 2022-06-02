@@ -1,7 +1,6 @@
 const express = require('express')
 const { isRegular } = require('../middlewares/auth')
 const { isMyProject, isInProject } = require('../middlewares/isMine')
-const upload = require('../middlewares/upload')
 
 const Project = require('../services/projects')
 const projects = app => {
@@ -29,8 +28,8 @@ const projects = app => {
       : res.status(200).json(response)
   })
 
-  router.post('/', [isRegular, upload.single('logo')], async (req, res) => {
-    const project = await projectService.create(req.body, req.file)
+  router.post('/', [isRegular], async (req, res) => {
+    const project = await projectService.create(req.body)
 
     project.fail
       ? res.status(400).json(project)

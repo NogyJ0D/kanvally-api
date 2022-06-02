@@ -1,3 +1,0 @@
-runtime: nodejs16
-service: kanvally-api
-instance_class: F2

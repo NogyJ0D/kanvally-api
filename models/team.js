@@ -24,8 +24,10 @@ const teamSchema = mongoose.Schema({
     maxlength: [32, 'El nombre del equipo no puede tener mas de 32 caracteres.']
   },
 
-  fileKey: String,
-  logoUrl: String,
+  logoUrl: {
+    type: String,
+    default: 'https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png?w=640'
+  },
 
   idProject: {
     type: mongoose.SchemaTypes.ObjectId,
@@ -86,12 +88,6 @@ const teamSchema = mongoose.Schema({
     }]
   }
 
-  // tasks: [
-  //   {
-  //     type: mongoose.SchemaTypes.ObjectId,
-  //     ref: 'tasks'
-  //   }
-  // ]
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 
 const teamModel = mongoose.model('teams', teamSchema)

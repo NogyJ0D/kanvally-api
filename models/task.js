@@ -43,8 +43,10 @@ const taskSchema = new mongoose.Schema({
     required: [true, 'Ingrese la descripción de la tarea.']
   },
 
-  fileKey: String,
-  logoUrl: String,
+  logoUrl: {
+    type: String,
+    default: 'https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png?w=640'
+  },
 
   comments: [
     {

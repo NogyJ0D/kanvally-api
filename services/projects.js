@@ -6,7 +6,6 @@ const sendEmail = require('../libs/email')
 const jwt = require('jsonwebtoken')
 const { jwtSecret } = require('../config')
 const InvitationModel = require('../models/invitation')
-const { uploadFile } = require('../libs/storage')
 
 class Projects {
   validate (error) {
@@ -40,56 +39,27 @@ class Projects {
   }
 
   // Modificar proyectos
-  async create (data, file) {
-    let uploaded
-    if (file) uploaded = await uploadFile(file?.originalname, file?.buffer)
-    if (uploaded?.success) {
-      const fileKey = uploaded.fileName
-      const logoUrl = `/files/${uploaded.fileName}`
-      return new ProjectModel(
-        {
-          name: data.name,
-          idBoss: data.idBoss,
-          fileKey,
-          logoUrl,
-          members: [{
-            _id: data.idBoss,
-            role: 2,
-            confirmed: true
-          }]
-        })
-        .save()
-        .then(res => {
-          if (res.fail) return res
-          else {
-            return UserModel.updateOne({ _id: data.idBoss }, { $push: { projects: res._id } })
-              .then(res => { return { success: true, message: 'El proyecto fue creado con éxito.' } })
-          }
-        })
-        .catch(error => { return this.validate(error) })
-    } else {
-      return new ProjectModel(
-        {
-          name: data.name,
-          idBoss: data.idBoss,
-          fileKey: 'kelly-sikkema-N3o-leQyFsI-unsplash.jpg',
-          logoUrl: '/files/kelly-sikkema-N3o-leQyFsI-unsplash.jpg',
-          members: [{
-            _id: data.idBoss,
-            role: 2,
-            confirmed: true
-          }]
-        })
-        .save()
-        .then(res => {
-          if (res.fail) return res
-          else {
-            return UserModel.updateOne({ _id: data.idBoss }, { $push: { projects: res._id } })
-              .then(res => { return { success: true, message: 'El proyecto fue creado con éxito.' } })
-          }
-        })
-        .catch(error => { return this.validate(error) })
-    }
+  async create (data) {
+    return new ProjectModel(
+      {
+        name: data.name,
+        idBoss: data.idBoss,
+        logoUrl: data.logoUrl || null,
+        members: [{
+          _id: data.idBoss,
+          role: 2,
+          confirmed: true
+        }]
+      })
+      .save()
+      .then(res => {
+        if (res.fail) return res
+        else {
+          return UserModel.updateOne({ _id: data.idBoss }, { $push: { projects: res._id } })
+            .then(res => { return { success: true, message: 'El proyecto fue creado con éxito.' } })
+        }
+      })
+      .catch(error => { return this.validate(error) })
   }
 
   // Reemplazarlo por específicos
