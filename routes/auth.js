@@ -30,11 +30,10 @@ const auth = app => {
   })
 
   router.post('/signup', async (req, res) => {
-    const user = req.body
-    const response = await authService.signup(user)
+    const response = await authService.signup(req.body)
 
-    if (response.fail || response.errors) return res.json(response)
-    else return tokenCookie(res, response)
+    if (response.fail || response.errors) return res.status(400).json(response)
+    else return res.status(201).json(response)
   })
 
   router.get('/email/:token', async (req, res) => {
@@ -42,7 +41,7 @@ const auth = app => {
     const response = await authService.emailValidate(token)
 
     if (response.fail) return res.status(400).json(response)
-    return res.status(200).json({ success: true, message: 'Tu email se validó exitosamente.' })
+    return res.status(200).send('<h1>Tu email se validó exitosamente.</h1>')
   })
 }
 

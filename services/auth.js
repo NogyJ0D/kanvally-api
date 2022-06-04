@@ -63,10 +63,10 @@ class Auth {
       '¡Gracias por entrar a Kanvally!',
       `<h1>¡Gracias por entrar a Kanvally!</h1>
       <br>
-      <a href='http://localhost:4000/auth/email/${emailToken}'>Valida tu email</a>`
+      <a href='https://kanvally-api.onrender.com/auth/email/${emailToken}'>Valida tu email</a>`
     )
 
-    return this.getToken(user)
+    return { success: true, message: 'Registro exitoso, valida tu email para ingresar.' }
   }
 
   async emailValidate (token) {

@@ -1,6 +1,18 @@
 const { mongoose } = require('../config/database')
 const uniqueValidator = require('mongoose-unique-validator')
 
+const commentSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: [true, 'Ingrese el usuario del comentario.']
+  },
+
+  text: {
+    type: String,
+    required: [true, 'Ingrese el texto del comentario.']
+  }
+}, { timestamps: { createdAt: 'created_at', updatedAt: false } })
+
 const taskSchema = new mongoose.Schema({
   idProject: {
     type: mongoose.SchemaTypes.ObjectId,
@@ -48,25 +60,7 @@ const taskSchema = new mongoose.Schema({
     default: 'https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png?w=640'
   },
 
-  comments: [
-    {
-      username: {
-        type: String,
-        required: [true, 'Ingrese el usuario del comentario.']
-      },
-
-      text: {
-        type: String,
-        required: [true, 'Ingrese el texto del comentario.']
-      },
-
-      created_date: {
-        type: Date,
-        default: new Date(),
-        immutable: true
-      }
-    }
-  ]
+  comments: [commentSchema]
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 taskSchema.plugin(uniqueValidator)
 

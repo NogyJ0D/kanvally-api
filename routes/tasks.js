@@ -17,6 +17,12 @@ const tasks = app => {
       : res.status(200).json(tasks)
   })
 
+  router.get('/:id/id-team/:idTeam/comments', [isRegular, isMember], async (req, res) => {
+    const comments = await taskService.getComments(req.params.id)
+
+    return res.status(200).json(comments)
+  })
+
   router.post('/', isRegular, async (req, res) => {
     const task = await taskService.create(req.body)
 

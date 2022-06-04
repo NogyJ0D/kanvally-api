@@ -58,7 +58,7 @@ const projects = app => {
 
     project.fail
       ? res.status(400).json(project)
-      : res.status(200).json(project)
+      : res.status(200).send('<h1>La invitación fue aceptada con éxito.</h1>')
   })
 
   router.put('/expel/:id/:userId', [isRegular, isMyProject], async (req, res) => {
@@ -70,7 +70,7 @@ const projects = app => {
   })
 
   router.delete('/:id', [isRegular, isMyProject], async (req, res) => {
-    const project = await projectService.delete(req.params.id)
+    const project = await projectService.delete(req.params.id, req.user)
 
     project.fail
       ? res.status(400).json(project)

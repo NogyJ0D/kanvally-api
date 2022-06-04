@@ -10,8 +10,8 @@ const memberSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: {
-      values: ['Miembro', 'Tester', 'Líder'],
-      message: 'El rol debe ser "Miembro", "Tester" o "Líder"'
+      values: ['Miembro', 'Tester', 'Líder', 'Lector'],
+      message: 'El rol debe ser "Miembro", "Tester", "Líder" o "Lector"'
     },
     required: [true, 'Ingrese el rol de los miembros del equipo.']
   }

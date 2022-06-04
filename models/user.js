@@ -35,11 +35,6 @@ const userSchema = new mongoose.Schema({
     default: 0
   },
 
-  profile_pic: {
-    type: String,
-    default: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'
-  },
-
   projects: [
     {
       type: mongoose.SchemaTypes.ObjectId,

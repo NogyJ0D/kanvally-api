@@ -38,9 +38,9 @@ class Projects {
     try { return await ProjectModel.findById(id).populate('members._id', 'username email').populate('teams') } catch (error) { return { fail: true, error } }
   }
 
-  // Modificar proyectos
   async create (data) {
-    return new ProjectModel(
+    if (data.logoUrl === '' || data.logoUrl === null) data.logoUrl = 'https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png?w=640'
+    const project = await new ProjectModel(
       {
         name: data.name,
         idBoss: data.idBoss,
@@ -50,14 +50,11 @@ class Projects {
           role: 2,
           confirmed: true
         }]
-      })
-      .save()
+      }).save()
+    if (project.fail) return project
+    return UserModel.findOneAndUpdate({ _id: data.idBoss }, { $push: { projects: project._id } }, { new: true }).populate({ path: 'projects', select: 'name logoUrl' })
       .then(res => {
-        if (res.fail) return res
-        else {
-          return UserModel.updateOne({ _id: data.idBoss }, { $push: { projects: res._id } })
-            .then(res => { return { success: true, message: 'El proyecto fue creado con éxito.' } })
-        }
+        return { success: true, message: 'El proyecto fue creado con éxito.', userProjects: res.projects }
       })
       .catch(error => { return this.validate(error) })
   }
@@ -72,7 +69,7 @@ class Projects {
     if (!user) return { fail: true, err: 'Ese email no está registrado o el usuario ya es miembro del proyecto.' }
 
     const project = await ProjectModel.findOne({ _id: projectId, 'members._id': { $ne: user._id } })
-    if (!project) return { fail: true, err: 'El proyecto no existe o el usuario ya es miembro.' }
+    if (!project) return { fail: true, err: 'El proyecto no existe o el usuario ya es miembro del proyecto.' }
 
     const invitation = await InvitationModel.findOne({ user: user._id, project: projectId })
     if (invitation) return { fail: true, err: 'La invitación ya fue mandada anteriormente y está a espera de confirmación.' }
@@ -87,9 +84,11 @@ class Projects {
             `Te han invitado al proyecto "${project.name}"`,
             `<h1>Te han invitado al proyecto "${project.name}"</h1>
             <br>
-            <a href='http://localhost:4000/projects/confirm/${emailToken}'>Aceptar la invitación</a>
+            <a href='https://kanvally-api.onrender.com/projects/confirm/${emailToken}'>Aceptar la invitación</a>
             <small>Esta invitación vencerá en 7 días.</small>`
         )
+        // https://kanvally-api.onrender.com url web
+        // http://localhost:4000 url local
 
         return { success: true, message: 'La invitación ha sido enviada exitosamente.' }
       })
@@ -105,7 +104,7 @@ class Projects {
         { _id: user },
         { $push: { projects: project } })
       await InvitationModel.findOneAndDelete({ _id: invitationId })
-      return { success: true, message: 'La invitación fue aceptada con éxito.' }
+      return { success: true }
     } catch (err) {
       return { fail: true, err }
     }
@@ -119,26 +118,23 @@ class Projects {
       await TeamModel.updateMany(
         { 'members._id': userId },
         { $pull: { members: { _id: userId } } })
-      await ProjectModel.updateOne(
+      const project = await ProjectModel.updateOne(
         { _id: id },
-        { $pull: { members: { _id: userId } } })
-      return { success: true, message: 'El usuario fue expulsado del proyecto exitosamente.' }
+        { $pull: { members: { _id: userId } } },
+        { new: true })
+      return { success: true, projectMembers: project.members, message: 'El usuario fue expulsado del proyecto exitosamente.' }
     } catch (error) { return { fail: true, error } }
   }
 
   // Eliminar el project del usuario
-  async delete (id) {
+  async delete (id, user) {
     try {
       await ProjectModel.findByIdAndDelete(id)
       await TeamModel.deleteMany({ idProject: id })
       await TaskModel.deleteMany({ idProject: id })
       await UserModel.updateMany({ projects: id }, { $pull: { projects: id } })
-      // const teams = await ProjectModel.findById(id).select('teams')
-      // const teams = await TeamModel.find({ idProject: id })
-      // // await TeamModel.deleteMany({ idProject: id })
-      // await TaskModel.deleteMany({  })
-      // await ProjectModel.findByIdAndDelete(id)
-      return { success: true, message: 'El proyecto fue eliminado exitosamente.' }
+      const User = await UserModel.findOne({ _id: user.id })
+      return { success: true, message: 'El proyecto fue eliminado exitosamente.', userProjects: User.projects }
     } catch (error) {
       return { fail: true, error }
     }

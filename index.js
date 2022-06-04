@@ -40,9 +40,8 @@ const tasksRoutes = require('./routes/tasks')
 tasksRoutes(app)
 
 // Starting
-const { port, env } = require('./config')
+const { port } = require('./config')
 app.listen(port, () => {
-  console.log('Node environment: ' + env || 'production')
   console.log('Working on port ' + port)
 })
 app.get('/', (req, res) => { return res.send('Kanvally API working on port ' + port) })
